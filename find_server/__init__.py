@@ -8,6 +8,7 @@
 """
 import paramiko
 import logging
+import os
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -15,9 +16,9 @@ username = "root"
 password = "doucare"
 
 
-def search(_ip):
-	ssh = paramiko.SSHClient()
-	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	ssh.connect(hostname='', port=22, username=username, password=password)
-	stdin, stdout, stderr = ssh.exec_command("ls")
-	logging.info(stdin)
+def test_env():
+	print os.environ
+
+
+if __name__ == '__main__':
+	test_env()

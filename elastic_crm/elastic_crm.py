@@ -22,6 +22,12 @@ lucene_project = "http://202.102.94.177:93/house365-crm/query?"
 
 elastic_project = "http://192.168.105.21:9200/_sql"
 
+elastic_explain = "http://192.168.105.21:9200/_sql/_explain?sql="
+
+meminfo_url = "http://192.168.105.21:9200/remote-meminfo-wu/meminfo/_search"
+
+paigong_url = "http://192.168.105.21:9200/remote-paigong-wu/paigong/_search"
+
 
 def lucene_url(url):
 	result = requests.get(url).text
@@ -30,7 +36,9 @@ def lucene_url(url):
 	json_0 = json.loads(json.loads(result)['value'])['docs']
 	logging.debug("json_0: %s" % json_0)
 	for a in json.loads(json_0):
-		logging.info(str(a['join_id']) + ' ' + json.dumps(a, ensure_ascii=False))
+		logging.info(
+			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + str(a['expiretime']) + "***" + json.dumps(a,
+																													 ensure_ascii=False))
 
 
 def elastic_url(url):
@@ -41,7 +49,7 @@ def elastic_url(url):
 
 
 def url2sql(url):
-	if re.match(r'(.*)\?d=(\d)&ps=(\d{1,2})&pi=(\d)&q=(.*)', url):
+	if re.match(r'(.*)\?d=(\d)&ps=(\d*?)&pi=(\d)&q=(.*)', url):
 		m = re.match(r'(.*)\?d=(\d)&ps=(\d{1,2})&pi=(\d)&q=(.*)', url)
 		logging.info('d:%s' % m.group(2))
 		d = int(m.group(2))
@@ -55,7 +63,7 @@ def url2sql(url):
 		pi = int(m.group(4))
 		where = ps2page(ps, pi, where)
 		logging.info('%s' % where)
-
+		return where
 	else:
 		logging.info(" the wronge lucene url")
 		return None
@@ -69,8 +77,9 @@ def ps2page(ps, pi, where):
 
 
 def d2table(d):
+	# todo
 	logging.debug(d == 3)
-	if d == 1 or d == 2 or d == 5 or d==3:
+	if d == 1 or d == 2 or d == 5 or d == 3:
 		return "select * from remote-meminfo-wu/meminfo where 1=1 "
 	elif d == 4:
 		return "select * from remote-paigong-wu/paigong where 1=1 "
@@ -159,10 +168,10 @@ def q2sql(q, where):
 		if key == 'sf':
 			where += ' order by'
 			for sf_key, sf_value in q_objects[key].iteritems():
-				if sf_value == 0:
-					where += ' %s desc , ' % sf_key
-				else:
+				if sf_value == 1:
 					where += ' %s asc , ' % sf_key
+				else:
+					where += ' %s desc , ' % sf_key
 			where = where[:-2]
 
 		if key == 'oq':
@@ -193,9 +202,29 @@ def sql2url(sql):
 	pass
 
 
+def explain_sql(_where):
+	response = requests.get(elastic_explain + _where)
+	logging.debug(response.text)
+	init_dsl = json.loads(response.text)
+	init_dsl['collapse'] = {"field": "memid"}
+	memid_dsl = json.dumps(init_dsl)
+	meminfo_response = requests.post(meminfo_url, memid_dsl)
+	logging.debug(meminfo_response.text)
+	elastic_result = json.loads(meminfo_response.text)
+	logging.info("****************************")
+	for result in elastic_result['hits']['hits']:
+		logging.info(
+			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " + str(
+				result['_source']['expiretime']) + " " + json.dumps(result['_source'], ensure_ascii=False))
+
+
 if __name__ == '__main__':
 	host = 'http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q='
 	# url = host + '{"ntq":{"pgstatus":"[1]"},"tq":{"channelid":7000000,"activity_type":"1","seafrom":"c124"},"afq":{"activity_name":"\u5fae\u4fe1"},"nq":{"seafromcate":"[1211,1121,1112,1221,1212,1122,1222,1111,5]"},"sf":{"pgstatus":1,"expiretime":1,"workday":0,"pgid":1}}'
-	url = host + '{"ntq":{"pgstatus":"[1,2]"},"tq":{"channelid":1000000,"join_from":"[43,112,199,225,311,312,313,379,34,46,53,54,60,110,160,161,217,339,356,357,358,68,107,111,113,119,125,141,175,176,222,223,226,301,314,315,316,336,340,359,360,380,42,52,121,122,208,216,224,237,244,245,337,353,354,355,361,362,363,365,366,375,108,114,115,154,248,230,4,5,103,143,144,153,167,169,174,218,219,254,66,177,179,247,253,255,261,262,341,342,137,234,257,317,318,1000]","buy_bankuai":"[1,3,5,7,9,11,13,14,15,17]","seafrom":"[c2,c1234]"},"afq":{"buy_new_loupan_zh":"[\u82cf\u5b81,\u6717\u8bd7]"},"rq":{"workday":"[0,999]"},"nq":{"seafromcate":"[1211,1121,1112,1221,1212,1122,1222,1111,5]"},"sf":{"pgstatus":1,"expiretime":1,"workday":0,"pgid":1}}'
-	url2sql(url)
+	# url = host + '{"ntq":{"pgstatus":"[1,2]"},"tq":{"channelid":1000000,"join_from":"[43,112,199,225,311,312,313,379,34,46,53,54,60,110,160,161,217,339,356,357,358,68,107,111,113,119,125,141,175,176,222,223,226,301,314,315,316,336,340,359,360,380,42,52,121,122,208,216,224,237,244,245,337,353,354,355,361,362,363,365,366,375,108,114,115,154,248,230,4,5,103,143,144,153,167,169,174,218,219,254,66,177,179,247,253,255,261,262,341,342,137,234,257,317,318,1000]","buy_bankuai":"[1,3,5,7,9,11,13,14,15,17]","seafrom":"[c2,c1234]"},"afq":{"buy_new_loupan_zh":"[\u82cf\u5b81,\u6717\u8bd7]"},"rq":{"workday":"[0,999]"},"nq":{"seafromcate":"[1211,1121,1112,1221,1212,1122,1222,1111,5]"},"sf":{"pgstatus":1,"expiretime":1,"workday":0,"pgid":1}}'
+	# url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
+
+	url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
+	where = url2sql(url)
+	explain_sql(where)
 	lucene_url(url)
