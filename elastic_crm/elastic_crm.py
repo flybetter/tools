@@ -13,12 +13,14 @@ import re
 
 import sys
 
+import logging.handlers
+
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARN, filename="demo.log", filemode="w", datefmt="%a, %d %b %Y %H:%M:%S")
 
-lucene_project = "http://202.102.94.177:93/house365-crm/query?"
+lucene_project = "http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q="
 
 elastic_project = "http://192.168.105.21:9200/_sql"
 
@@ -36,7 +38,7 @@ def lucene_url(url):
 	json_0 = json.loads(json.loads(result)['value'])['docs']
 	logging.debug("json_0: %s" % json_0)
 	for a in json.loads(json_0):
-		logging.info(
+		logging.warn(
 			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + str(a['expiretime']) + "***" + json.dumps(a,
 																													 ensure_ascii=False))
 
@@ -62,7 +64,7 @@ def url2sql(url):
 		logging.info('pi:%s' % m.group(4))
 		pi = int(m.group(4))
 		where = ps2page(ps, pi, where)
-		logging.info('%s' % where)
+		logging.warn('where: %s' % where)
 		return where
 	else:
 		logging.info(" the wronge lucene url")
@@ -130,7 +132,7 @@ def q2sql(q, where):
 				afq_values = re.findall(ur"[\u4e00-\u9fa50-9A-Za-z]+", str(q_objects[key][ntq_key]).decode('utf-8'))
 				for afq_value in afq_values:
 					logging.debug(afq_value)
-					if re.match(r'\d+', afq_value):
+					if re.match(r'^\d+$', afq_value):
 						where += ntq_key + ' = ' + afq_value + ' and '
 					else:
 						where += '%s = "%s" and ' % (ntq_key, afq_value)
@@ -190,9 +192,7 @@ def q2sql(q, where):
 			for rq_key in q_objects[key].iterkeys():
 				where += 'and ('
 				rq_values = re.findall(ur"[\u4e00-\u9fa50-9A-Za-z]+", str(q_objects[key][rq_key]).decode('utf-8'))
-				where += '(' + rq_key + ' between "' + rq_values[0] + '" and "' + rq_values[1] + '" ) and';
-			where = where[:-3]
-			where += ' ) '
+				where += rq_key + ' between "' + rq_values[0] + '" and "' + rq_values[1] + '" ) '
 
 	logging.info(where)
 	return where
@@ -213,18 +213,36 @@ def explain_sql(_where):
 	elastic_result = json.loads(meminfo_response.text)
 	logging.info("****************************")
 	for result in elastic_result['hits']['hits']:
-		logging.info(
+		logging.warn(
 			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " + str(
 				result['_source']['expiretime']) + " " + json.dumps(result['_source'], ensure_ascii=False))
 
 
+def get_url():
+	with open("crm.log", "r") as f:
+		lines = f.readlines()
+		i = 0
+		for line in lines:
+			if re.match(r'.*query:{.*', line):
+				i = i + 1
+				logging.warn("line num:" + str(i))
+				q = re.match(r'.*query:(.*)', line)
+				temp_lucene = lucene_project + q.group(1)
+				logging.warn("temp_lucene:" + temp_lucene)
+				where = url2sql(temp_lucene)
+				explain_sql(where)
+				lucene_url(temp_lucene)
+
+
 if __name__ == '__main__':
-	host = 'http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q='
+	# host = 'http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q='
 	# url = host + '{"ntq":{"pgstatus":"[1]"},"tq":{"channelid":7000000,"activity_type":"1","seafrom":"c124"},"afq":{"activity_name":"\u5fae\u4fe1"},"nq":{"seafromcate":"[1211,1121,1112,1221,1212,1122,1222,1111,5]"},"sf":{"pgstatus":1,"expiretime":1,"workday":0,"pgid":1}}'
 	# url = host + '{"ntq":{"pgstatus":"[1,2]"},"tq":{"channelid":1000000,"join_from":"[43,112,199,225,311,312,313,379,34,46,53,54,60,110,160,161,217,339,356,357,358,68,107,111,113,119,125,141,175,176,222,223,226,301,314,315,316,336,340,359,360,380,42,52,121,122,208,216,224,237,244,245,337,353,354,355,361,362,363,365,366,375,108,114,115,154,248,230,4,5,103,143,144,153,167,169,174,218,219,254,66,177,179,247,253,255,261,262,341,342,137,234,257,317,318,1000]","buy_bankuai":"[1,3,5,7,9,11,13,14,15,17]","seafrom":"[c2,c1234]"},"afq":{"buy_new_loupan_zh":"[\u82cf\u5b81,\u6717\u8bd7]"},"rq":{"workday":"[0,999]"},"nq":{"seafromcate":"[1211,1121,1112,1221,1212,1122,1222,1111,5]"},"sf":{"pgstatus":1,"expiretime":1,"workday":0,"pgid":1}}'
 	# url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
 
-	url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
-	where = url2sql(url)
-	explain_sql(where)
-	lucene_url(url)
+	# url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
+	# where = url2sql(url)
+	# explain_sql(where)
+	# lucene_url(url)
+
+	get_url()
