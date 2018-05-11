@@ -1,0 +1,625 @@
+{
+  "remote-paigong-wu": {
+    "mappings": {
+      "paigong": {
+        "properties": {
+          "active_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "active_type": {
+            "type": "long"
+          },
+          "activity_id": {
+            "type": "long"
+          },
+          "activity_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "activity_type": {
+            "type": "long"
+          },
+          "addtime": {
+            "type": "long"
+          },
+          "addtime1": {
+            "type": "long"
+          },
+          "addtime2": {
+            "type": "long"
+          },
+          "addtime3": {
+            "type": "long"
+          },
+          "addtime4": {
+            "type": "long"
+          },
+          "addtime5": {
+            "type": "long"
+          },
+          "buy_area": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_bankuai": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_demand": {
+            "type": "boolean"
+          },
+          "buy_floor": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_floor2": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_hux": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_loupan": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_loupan_zh": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_meters": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_meters_other": {
+            "type": "long"
+          },
+          "buy_new_total": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_total_other": {
+            "type": "long"
+          },
+          "buy_new_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_unitprice": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_new_unitprice_other": {
+            "type": "long"
+          },
+          "buy_new_why": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_pay_time": {
+            "type": "long"
+          },
+          "buy_property": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "buy_purchase": {
+            "type": "long"
+          },
+          "buyintention": {
+            "type": "long"
+          },
+          "channel_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "channel_type": {
+            "type": "long"
+          },
+          "channelid": {
+            "type": "long"
+          },
+          "data_source": {
+            "type": "long"
+          },
+          "developers": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "deviceinfo": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "edittime": {
+            "type": "long"
+          },
+          "exporttime": {
+            "type": "long"
+          },
+          "focuspower": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "importfrom": {
+            "type": "long"
+          },
+          "importtime": {
+            "type": "long"
+          },
+          "iscardmonths": {
+            "type": "long"
+          },
+          "join_alllasttime": {
+            "type": "long"
+          },
+          "join_attend": {
+            "type": "long"
+          },
+          "join_bi_campaign": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_bi_tag": {
+            "type": "long"
+          },
+          "join_buy": {
+            "type": "long"
+          },
+          "join_channelid": {
+            "type": "long"
+          },
+          "join_dateline": {
+            "type": "long"
+          },
+          "join_from": {
+            "type": "long"
+          },
+          "join_fromcate": {
+            "type": "long"
+          },
+          "join_id": {
+            "type": "long"
+          },
+          "join_isweb": {
+            "type": "long"
+          },
+          "join_lastfrom": {
+            "type": "long"
+          },
+          "join_lasttime": {
+            "type": "long"
+          },
+          "join_memphone": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_remark": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_visit_remark": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_visit_state": {
+            "type": "long"
+          },
+          "join_visit_time": {
+            "type": "long"
+          },
+          "join_visit_user": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "join_visit_vret": {
+            "type": "long"
+          },
+          "jointime": {
+            "type": "long"
+          },
+          "lastmarktime": {
+            "type": "long"
+          },
+          "lastoverresult": {
+            "type": "long"
+          },
+          "lastovertime": {
+            "type": "long"
+          },
+          "lastpgstatus": {
+            "type": "long"
+          },
+          "life_active_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_actives_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_car_time": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_domestic_type": {
+            "type": "long"
+          },
+          "life_flea_need": {
+            "type": "long"
+          },
+          "life_fresh_need": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_leisure_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_marry_budget": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "life_pet_need": {
+            "type": "long"
+          },
+          "loupanids": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "membirthdate": {
+            "type": "long"
+          },
+          "memdistrict": {
+            "type": "long"
+          },
+          "memdistrict_zh": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memfirstfrom": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memfirstimport": {
+            "type": "long"
+          },
+          "memfrom": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memfromcate": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memhobby": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memid": {
+            "type": "long"
+          },
+          "memname": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memphone": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memtel": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "memuser": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "mlastmarktime": {
+            "type": "long"
+          },
+          "pgid": {
+            "type": "long"
+          },
+          "phonetype": {
+            "type": "long"
+          },
+          "preference": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "recommendlpids": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "remark": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "remark_mes": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "repair_demand": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "repair_meters": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "repair_money": {
+            "type": "long"
+          },
+          "repair_need": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "repair_process": {
+            "type": "long"
+          },
+          "repair_type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "revisitnum": {
+            "type": "long"
+          },
+          "timestamp": {
+            "type": "date"
+          }
+        }
+      }
+    }
+  }
+}

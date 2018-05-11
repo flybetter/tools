@@ -18,9 +18,10 @@ import logging.handlers
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-logging.basicConfig(level=logging.WARN, filename="demo.log", filemode="w", datefmt="%a, %d %b %Y %H:%M:%S")
+logging.basicConfig(level=logging.INFO, filename="demo.log", filemode="w", datefmt="%a, %d %b %Y %H:%M:%S")
+# logging.basicConfig(level=logging.INFO)
 
-lucene_project = "http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q="
+lucene_project = "http://202.102.94.177:93/house365-crm/query?d=%s&ps=20&pi=1&q=%s"
 
 elastic_project = "http://192.168.105.21:9200/_sql"
 
@@ -39,8 +40,8 @@ def lucene_url(url):
 	logging.debug("json_0: %s" % json_0)
 	for a in json.loads(json_0):
 		logging.warn(
-			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + str(a['expiretime']) + "***" + json.dumps(a,
-																													 ensure_ascii=False))
+			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + "***" + json.dumps(a,
+																							  ensure_ascii=False))
 
 
 def elastic_url(url):
@@ -79,11 +80,9 @@ def ps2page(ps, pi, where):
 
 
 def d2table(d):
-	# todo
-	logging.debug(d == 3)
-	if d == 1 or d == 2 or d == 5 or d == 3:
+	if d == 3:
 		return "select * from remote-meminfo-wu/meminfo where 1=1 "
-	elif d == 4:
+	else:
 		return "select * from remote-paigong-wu/paigong where 1=1 "
 
 
@@ -202,36 +201,80 @@ def sql2url(sql):
 	pass
 
 
+def add_dinstinct_id(_where, response):
+	_table = re.match(r'.*from(.*)where.*', _where).group(1)
+	if _table == "remote-meminfo-wu/meminfo":
+		init_dsl = json.loads(response)
+		init_dsl['collapse'] = {"field": "memid"}
+		elastic_dsl = json.dumps(init_dsl)
+	else:
+		init_dsl = json.loads(response)
+		init_dsl['collapse'] = {"field": "pgid"}
+		elastic_dsl = json.dumps(init_dsl)
+
+	logging.info("elastic_dsl:" + elastic_dsl)
+	return elastic_dsl
+
+
 def explain_sql(_where):
 	response = requests.get(elastic_explain + _where)
 	logging.debug(response.text)
-	init_dsl = json.loads(response.text)
-	init_dsl['collapse'] = {"field": "memid"}
-	memid_dsl = json.dumps(init_dsl)
-	meminfo_response = requests.post(meminfo_url, memid_dsl)
-	logging.debug(meminfo_response.text)
-	elastic_result = json.loads(meminfo_response.text)
+	# init_dsl = json.loads(response.text)
+	# init_dsl['collapse'] = {"field": "memid"}
+	# memid_dsl = json.dumps(init_dsl)
+	elastic_dsl = add_dinstinct_id(_where, response.text)
+	elastic_url = ''
+	_table = re.match(r'.*from(.*)where.*', _where).group(1)
+
+	if "remote-meminfo-wu/meminfo" in _table:
+		elastic_url = meminfo_url
+	else:
+		elastic_url = paigong_url
+
+	elasitc_response = requests.post(elastic_url, elastic_dsl)
+	logging.info(elasitc_response.text)
+	elastic_result = json.loads(elasitc_response.text)
 	logging.info("****************************")
 	for result in elastic_result['hits']['hits']:
 		logging.warn(
-			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " + str(
-				result['_source']['expiretime']) + " " + json.dumps(result['_source'], ensure_ascii=False))
+			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " + json.dumps(
+				result['_source'], ensure_ascii=False))
 
 
 def get_url():
 	with open("crm.log", "r") as f:
 		lines = f.readlines()
 		i = 0
-		for line in lines:
+		for i, line in enumerate(lines):
 			if re.match(r'.*query:{.*', line):
 				i = i + 1
-				logging.warn("line num:" + str(i))
+				logging.warn("line num:" + str(i) + "  " + line)
 				q = re.match(r'.*query:(.*)', line)
-				temp_lucene = lucene_project + q.group(1)
+				d = check_d(q.group(1))
+				temp_lucene = (lucene_project % (d, q.group(1)))
 				logging.warn("temp_lucene:" + temp_lucene)
 				where = url2sql(temp_lucene)
 				explain_sql(where)
 				lucene_url(temp_lucene)
+
+
+def check_d(url):
+	if 'pgid' in url:
+		d = 3
+	else:
+		d = 2
+	return d
+
+
+# if re.match(r'.*query:{.*', line):
+# 	i = i + 1
+# 	logging.warn("line num:" + str(i))
+# 	q = re.match(r'.*query:(.*)', line)
+# 	temp_lucene = lucene_project + q.group(1)
+# 	logging.warn("temp_lucene:" + temp_lucene)
+# 	where = url2sql(temp_lucene)
+# 	explain_sql(where)
+# 	lucene_url(temp_lucene)
 
 
 if __name__ == '__main__':

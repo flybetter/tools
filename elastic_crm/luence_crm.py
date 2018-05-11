@@ -26,6 +26,5 @@ def lucene_url(lucene_url):
 
 if __name__ == '__main__':
 	host = 'http://202.102.94.177:93/house365-crm/query?d=3&ps=20&pi=1&q='
-	# url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":1}}'
-	url = host + '{"tq":{"join_id":11434754},"sf":{"expiretime":1}}'
+	url = host + '{"tq":{"channelid":1000000},"sf":{"expiretime":0}}'
 	lucene_url(url)
