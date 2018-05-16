@@ -16,7 +16,9 @@ import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-
-class url2elastic(object):
-	def __init__(self, url):
-		self._
+if __name__ == '__main__':
+	a = "[u'6325219']"
+	if re.match(r"\[u'(\d+)'\]", a):
+		print re.search(r"\d+", a).group()
+	else:
+		print 11

@@ -1,0 +1,5 @@
+git rm --cached -r .idea/dea/  # 代表.idea目录下的所有文件
+*.pyc  # 代表所有.pyc结尾的文件
+.idea/workspace.xml  # 添加单个文件路径
+.idea/misc.xml
+.idea/TextAnalysis.iml

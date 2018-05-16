@@ -1,15 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 """
 @project= tools
 @file= __init__.py
 @author= wubingyu
 @create_time= 2018/4/24 下午3:08
 """
+from __future__ import division
 import requests
 import json
 import logging
 import re
+from collections import OrderedDict
 
 import sys
 
@@ -18,8 +22,8 @@ import logging.handlers
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-logging.basicConfig(level=logging.INFO, filename="demo.log", filemode="w", datefmt="%a, %d %b %Y %H:%M:%S")
-# logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO, filename="demo.log", filemode="w", datefmt="%a, %d %b %Y %H:%M:%S")
+logging.basicConfig(level=logging.ERROR)
 
 lucene_project = "http://202.102.94.177:93/house365-crm/query?d=%s&ps=20&pi=1&q=%s"
 
@@ -27,21 +31,53 @@ elastic_project = "http://192.168.105.21:9200/_sql"
 
 elastic_explain = "http://192.168.105.21:9200/_sql/_explain?sql="
 
-meminfo_url = "http://192.168.105.21:9200/remote-meminfo-wu/meminfo/_search"
+paigong_url = "http://192.168.105.21:9200/elastic-paigong/paigong/_search"
 
-paigong_url = "http://192.168.105.21:9200/remote-paigong-wu/paigong/_search"
+join_url = "http://192.168.105.21:9200/elastic-joined/joined/_search"
+
+flag = "elastic-paigong/paigong"
+
+paigong_table = "elastic-paigong/paigong"
+
+join_table = "elastic-joined/joined"
+
+global score_80
+global score_10
+global score_100
+global used_time
+score_80 = 0
+score_10 = 0
+score_100 = 0
+used_time = 0
+
+
+def check_lucene_pgid(a):
+	try:
+		pgid = str(a['pgid'])
+	except KeyError:
+		pgid = "none"
+	return pgid
+
+
+def check_elastic_pgid(result):
+	try:
+		pgid = str(result['_source']['pgid'])
+	except KeyError:
+		pgid = 'none'
+	return pgid
 
 
 def lucene_url(url):
-	result = requests.get(url).text
+	result = requests.get(url, timeout=60).text
 	logging.debug("result: %s" % result)
-
 	json_0 = json.loads(json.loads(result)['value'])['docs']
 	logging.debug("json_0: %s" % json_0)
 	for a in json.loads(json_0):
 		logging.warn(
-			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + "***" + json.dumps(a,
-																							  ensure_ascii=False))
+			"lucene: " + str(a['join_id']) + ' ' + str(a['memid']) + ' ' + check_lucene_pgid(
+				a) + ' ' + "***" + json.dumps(a,
+											  ensure_ascii=False))
+	return json.loads(json_0)
 
 
 def elastic_url(url):
@@ -81,9 +117,9 @@ def ps2page(ps, pi, where):
 
 def d2table(d):
 	if d == 3:
-		return "select * from remote-meminfo-wu/meminfo where 1=1 "
+		return "select * from %s where 1=1 " % paigong_table
 	else:
-		return "select * from remote-paigong-wu/paigong where 1=1 "
+		return "select * from %s where 1=1 " % join_table
 
 
 def reversed_cmp(x, y):
@@ -99,7 +135,8 @@ def reversed_cmp(x, y):
 
 
 def q2sql(q, where):
-	q_objects = json.loads(q)
+	# q_objects = json.loads(q)
+	q_objects = json.loads(q, object_pairs_hook=OrderedDict)
 	for key in sorted(q_objects.iterkeys(), reversed_cmp):
 		logging.info("key: %s" % key)
 		if key == 'ntq':
@@ -203,7 +240,7 @@ def sql2url(sql):
 
 def add_dinstinct_id(_where, response):
 	_table = re.match(r'.*from(.*)where.*', _where).group(1)
-	if _table == "remote-meminfo-wu/meminfo":
+	if _table.strip() == join_table:
 		init_dsl = json.loads(response)
 		init_dsl['collapse'] = {"field": "memid"}
 		elastic_dsl = json.dumps(init_dsl)
@@ -226,10 +263,10 @@ def explain_sql(_where):
 	elastic_url = ''
 	_table = re.match(r'.*from(.*)where.*', _where).group(1)
 
-	if "remote-meminfo-wu/meminfo" in _table:
-		elastic_url = meminfo_url
-	else:
+	if flag in _table:
 		elastic_url = paigong_url
+	else:
+		elastic_url = join_url
 
 	elasitc_response = requests.post(elastic_url, elastic_dsl)
 	logging.info(elasitc_response.text)
@@ -237,25 +274,86 @@ def explain_sql(_where):
 	logging.info("****************************")
 	for result in elastic_result['hits']['hits']:
 		logging.warn(
-			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " + json.dumps(
+			"elastic: " + str(result['_source']['join_id']) + " " + str(result['_source']['memid']) + " " +
+			check_elastic_pgid(result) + " " + json.dumps(
 				result['_source'], ensure_ascii=False))
+
+	return elastic_result['hits']['hits']
 
 
 def get_url():
 	with open("crm.log", "r") as f:
 		lines = f.readlines()
-		i = 0
+		sum = 0
+
 		for i, line in enumerate(lines):
 			if re.match(r'.*query:{.*', line):
-				i = i + 1
+				sum = sum + 1
 				logging.warn("line num:" + str(i) + "  " + line)
 				q = re.match(r'.*query:(.*)', line)
 				d = check_d(q.group(1))
 				temp_lucene = (lucene_project % (d, q.group(1)))
 				logging.warn("temp_lucene:" + temp_lucene)
 				where = url2sql(temp_lucene)
-				explain_sql(where)
-				lucene_url(temp_lucene)
+				elastic_list = explain_sql(where)
+				lucene_list = lucene_url(temp_lucene)
+				get_rate(i, elastic_list, lucene_list, where, line, sum)
+
+
+def get_rate(i, elastic_list, lucene_list, where, line, sum):
+	elastic_pgid = set()
+	elastic_memid = set()
+	lucene_pgid = set()
+	lucene_memid = set()
+
+	global score_80
+	global score_10
+	global score_100
+	global used_time
+
+	for result in elastic_list:
+		elastic_pgid.add(check_elastic_pgid(result))
+		elastic_memid.add(str(result['_source']['memid']))
+
+	for result in lucene_list:
+		# lucene_pgid.add(check_lucene_pgid(result))
+		# lucene_memid.add(str(result['memid']))
+
+		if re.match(r"\[u'(\d+)'\]", check_lucene_pgid(result)):
+			lucene_pgid.add(str(re.search(r'\d+', check_lucene_pgid(result)).group()))
+		else:
+			lucene_pgid.add("none")
+		lucene_memid.add(str(re.search(r'\d+', str(result['memid'])).group()))
+
+	match_pgid = elastic_pgid & lucene_pgid
+	match_memid = elastic_memid & lucene_memid
+
+	pgid_rate = "none" if len(lucene_list) == 0 else (len(match_pgid) / len(lucene_pgid)) * 100
+	memid_rate = "none" if len(lucene_list) == 0 else (len(match_memid) / len(lucene_memid)) * 100
+
+	logging.warn(" line number:" + str(i) + " memid rate:" + str(memid_rate * 100) + "%" + " pgid rate:" + str(
+		pgid_rate * 100) + "%")
+	if pgid_rate != "none" or memid_rate != "none":
+		print
+		"******************"
+
+		if pgid_rate == 100.0 or memid_rate == 100.0:
+			score_100 += 1
+
+		if pgid_rate > 80.0 or memid_rate > 80.0:
+			score_80 += 1
+
+		if pgid_rate <= 10.0 and memid_rate <= 10.0:
+			print("where:" + where)
+			print("line:" + line)
+			score_10 += 1
+		used_time += 1
+
+		print("line number:" + str(i) + " memid rate:" + str(memid_rate) + "%" + " pgid rate: " + str(pgid_rate) + "%")
+		print(
+			"sum: " + str(sum) + " used_time: " + str(used_time) + " score_10: " + str(score_10) + " score_80: " + str(
+				score_80) + " score_100: " + str(
+				score_100))
 
 
 def check_d(url):
