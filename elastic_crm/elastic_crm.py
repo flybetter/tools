@@ -334,8 +334,7 @@ def get_rate(i, elastic_list, lucene_list, where, line, sum):
 	logging.warn(" line number:" + str(i) + " memid rate:" + str(memid_rate * 100) + "%" + " pgid rate:" + str(
 		pgid_rate * 100) + "%")
 	if pgid_rate != "none" or memid_rate != "none":
-		print
-		"******************"
+		print("******************")
 
 		if pgid_rate == 100.0 or memid_rate == 100.0:
 			score_100 += 1
